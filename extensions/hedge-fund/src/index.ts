@@ -12,6 +12,9 @@ import { hfExecuteTradesTool } from "./tools/hf-execute-trades.js"
 import { hfGetFundStatusTool } from "./tools/hf-get-fund-status.js"
 import { hfRunDailyCycleTool } from "./tools/hf-run-daily-cycle.js"
 import { hfSetFundConfigTool } from "./tools/hf-set-fund-config.js"
+import { hfScheduleCycleTool } from "./tools/hf-schedule-cycle.js"
+import { hfConfigureAlertsTool } from "./tools/hf-configure-alerts.js"
+import { scheduler } from "./scheduler.js"
 
 // ── Tool Adapter ──
 
@@ -37,6 +40,8 @@ const ALL_TOOLS: ReadonlyArray<ToolDef> = [
   hfGetFundStatusTool,
   hfRunDailyCycleTool,
   hfSetFundConfigTool,
+  hfScheduleCycleTool,
+  hfConfigureAlertsTool,
 ]
 
 // ── Plugin Definition ──
@@ -83,6 +88,9 @@ const plugin: {
       maxDrawdownPct: (cfg.maxDrawdownPct as number) ?? 0.10,
       baseNotionalPerTrade: 1000,
     }
+
+    // Wire scheduler so timed cycles can access live config + fundConfig
+    scheduler.init(getConfig, fundConfig)
 
     for (const tool of ALL_TOOLS) {
       api.registerTool(

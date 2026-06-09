@@ -191,3 +191,43 @@ export interface ToolResult<T> {
   readonly data?: T
   readonly error?: string
 }
+
+// ── Scheduling ──
+
+export interface ScheduleEntry {
+  id: string
+  timeUtc: string // "HH:MM"
+  mode: CycleMode
+  symbols: string[] | null
+  enabled: boolean
+  createdAt: string
+  lastRunAt: string | null
+  nextRunAt: string
+}
+
+// ── Alerts ──
+
+export type AlertEventType =
+  | "cycle_complete"
+  | "buy_signal"
+  | "sell_signal"
+  | "trading_halted"
+  | "drawdown_alert"
+
+export type AlertChannelType = "line" | "telegram" | "webhook"
+
+export interface AlertChannel {
+  readonly id: string
+  readonly type: AlertChannelType
+  readonly lineToken?: string
+  readonly telegramBotToken?: string
+  readonly telegramChatId?: string
+  readonly webhookUrl?: string
+  readonly events: readonly AlertEventType[]
+}
+
+export interface AlertPayload {
+  readonly eventType: AlertEventType
+  readonly summary: string
+  readonly details?: string
+}
