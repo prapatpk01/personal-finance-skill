@@ -4,6 +4,8 @@ import { emptyPluginConfigSchema } from "openclaw/plugin-sdk"
 import { buildConfig } from "./config.js"
 import type { FundConfig, HedgeFundConfig, ToolContext, ToolResult } from "./types.js"
 import type { AlpacaEnv } from "./types.js"
+import { configureStorePath } from "./storage.js"
+import { scheduler } from "./scheduler.js"
 
 import { hfResearchBriefTool } from "./tools/hf-research-brief.js"
 import { hfGenerateSignalsTool } from "./tools/hf-generate-signals.js"
@@ -14,7 +16,8 @@ import { hfRunDailyCycleTool } from "./tools/hf-run-daily-cycle.js"
 import { hfSetFundConfigTool } from "./tools/hf-set-fund-config.js"
 import { hfScheduleCycleTool } from "./tools/hf-schedule-cycle.js"
 import { hfConfigureAlertsTool } from "./tools/hf-configure-alerts.js"
-import { scheduler } from "./scheduler.js"
+import { hfManagePortfolioTool } from "./tools/hf-manage-portfolio.js"
+import { hfDividendTrackerTool } from "./tools/hf-dividend-tracker.js"
 
 // ── Tool Adapter ──
 
@@ -42,6 +45,8 @@ const ALL_TOOLS: ReadonlyArray<ToolDef> = [
   hfSetFundConfigTool,
   hfScheduleCycleTool,
   hfConfigureAlertsTool,
+  hfManagePortfolioTool,
+  hfDividendTrackerTool,
 ]
 
 // ── Plugin Definition ──
@@ -56,11 +61,14 @@ const plugin: {
   id: "hedge-fund",
   name: "Office Hedge Fund",
   description:
-    "Multi-agent hedge fund with Research, Quant, Risk, and Execution teams for trading stocks, gold, and BTC",
+    "Multi-agent hedge fund with Research, Quant, Risk, and Execution teams for trading stocks, gold, and BTC. Includes portfolio management, dividend tracking, scheduled cycles, and mobile push alerts.",
   configSchema: emptyPluginConfigSchema(),
 
   register(api: OpenClawPluginApi) {
     const cfg = (api.pluginConfig ?? {}) as Record<string, unknown>
+
+    // Configure persistence path if provided
+    if (cfg.stateFilePath) configureStorePath(cfg.stateFilePath as string)
 
     // Lazy config — resolves env vars on first tool call
     let configCache: HedgeFundConfig | null = null
@@ -89,7 +97,7 @@ const plugin: {
       baseNotionalPerTrade: 1000,
     }
 
-    // Wire scheduler so timed cycles can access live config + fundConfig
+    // Wire scheduler — loads persisted schedules/alerts and arms timers
     scheduler.init(getConfig, fundConfig)
 
     for (const tool of ALL_TOOLS) {

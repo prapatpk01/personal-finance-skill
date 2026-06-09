@@ -43,6 +43,11 @@
         "items": { "type": "string" },
         "description": "Default trading universe (ticker symbols)",
         "default": ["AAPL", "TSLA", "NVDA", "GLD", "BTCUSD"]
+      },
+      "stateFilePath": {
+        "type": "string",
+        "description": "Path to persist schedules, alerts, portfolios, and dividend records (default: ./hedge-fund-state.json)",
+        "default": "./hedge-fund-state.json"
       }
     }
   }

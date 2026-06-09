@@ -192,6 +192,49 @@ export interface ToolResult<T> {
   readonly error?: string
 }
 
+// ── Portfolio Management ──
+
+export type PortfolioStrategy = "momentum" | "passive" | "dividend_growth" | "covered_call" | "custom"
+
+export interface Portfolio {
+  id: string
+  name: string
+  description: string
+  strategy: PortfolioStrategy
+  symbols: string[]
+  targetPct: Record<string, number>
+  notes?: string
+  createdAt: string
+  updatedAt: string
+}
+
+// ── Dividend Tracking ──
+
+export type Currency = "USD" | "THB"
+
+export interface DividendEntry {
+  id: string
+  portfolioId: string
+  symbol: string
+  exDate: string
+  payDate: string
+  perShare: number
+  shares: number
+  totalAmount: number
+  currency: Currency
+  recordedAt: string
+}
+
+export interface DividendWithdrawal {
+  id: string
+  portfolioId: string | null
+  amount: number
+  currency: Currency
+  date: string
+  note: string
+  recordedAt: string
+}
+
 // ── Scheduling ──
 
 export interface ScheduleEntry {

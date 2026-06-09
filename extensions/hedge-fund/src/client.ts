@@ -71,12 +71,18 @@ export const CRYPTO_SYMBOLS = new Set([
 
 const ETF_SYMBOLS = new Set([
   "GLD", "SLV", "USO", "SPY", "QQQ", "IWM", "TLT", "GDX", "GDXJ",
+  "GPIQ", "QDVO", "BALI", "SGOV",
 ])
 
-export function assetClass(symbol: string): "equity" | "crypto" | "etf" {
+export function assetClass(symbol: string): "equity" | "crypto" | "etf" | "thai_equity" {
   if (CRYPTO_SYMBOLS.has(symbol)) return "crypto"
   if (ETF_SYMBOLS.has(symbol)) return "etf"
+  if (symbol.endsWith(".BK")) return "thai_equity"
   return "equity"
+}
+
+export function isTradableOnAlpaca(symbol: string): boolean {
+  return assetClass(symbol) !== "thai_equity"
 }
 
 // ── Price Snapshots ──
@@ -91,8 +97,10 @@ export async function getSnapshots(
   config: HedgeFundConfig,
   symbols: readonly string[]
 ): Promise<AssetSnapshot[]> {
-  const stocks = symbols.filter(s => !CRYPTO_SYMBOLS.has(s))
-  const cryptos = symbols.filter(s => CRYPTO_SYMBOLS.has(s))
+  // Thai SET-listed symbols (.BK) are not available on Alpaca — skip silently
+  const alpacaSymbols = symbols.filter(s => isTradableOnAlpaca(s))
+  const stocks = alpacaSymbols.filter(s => !CRYPTO_SYMBOLS.has(s))
+  const cryptos = alpacaSymbols.filter(s => CRYPTO_SYMBOLS.has(s))
   const results: AssetSnapshot[] = []
 
   if (stocks.length > 0) {
